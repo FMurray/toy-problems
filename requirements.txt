@@ -1,0 +1,6 @@
+maturin
+numpy
+pandas
+matplotlib
+scipy
+sympy

@@ -1,13 +1,13 @@
 use std::{env, fs::{self, DirEntry}, path::PathBuf, collections::HashMap};
 use dialoguer::{console::Term, Select, theme::ColorfulTheme};
+use pyo3::prelude::*;
+use pyo3::types::IntoPyDict;
 
 fn is_toy_problem(path: PathBuf) -> Result<bool, Box<dyn std::error::Error>> {
     let metadata = fs::metadata(&path)?;
     let filename = path.file_name().unwrap().to_str().unwrap();
     Ok(metadata.is_dir() && !filename.contains("."))
 }
-
-
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let current_dir = env::current_dir()?;
@@ -41,23 +41,48 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         None => println!("User did not select anything"),
     }
 
+
+    let mut impls: Vec<String> = vec![]; 
+
     let problem_dir = selected_problem.path();
     for entry in fs::read_dir(problem_dir)? {
         let entry = entry?;
         let path = entry.path();
         let filename = path.file_name().unwrap().to_str().unwrap();
-        println!("files: {}", filename)
-        // if filename.contains(".rs") {
-        //     println!("Running {}", filename);
-        //     let output = std::process::Command::new("cargo")
-        //         .arg("run")
-        //         .arg("--bin")
-        //         .arg(filename)
-        //         .output()
-        //         .expect("failed to execute process");
-        //     println!("{}", String::from_utf8_lossy(&output.stdout));
-        // }
+        impls.push(filename.to_string());
+        if filename.contains(".rs") {
+            println!("Running {}", filename);
+            let output = std::process::Command::new("cargo")
+                .arg("run")
+                .arg("--bin")
+                .arg(filename)
+                .output()
+                .expect("failed to execute process");
+            println!("{}", String::from_utf8_lossy(&output.stdout));
+        }
     }
+
+    let selected_impl: Option<usize> = Select::with_theme(&ColorfulTheme::default())
+        .with_prompt("Select an implementation")
+        .default(0)
+        .items(&impls[..])
+        .interact_on_opt(&Term::stderr())?;
+
+
+    match selected_impl {
+        Some(index) => println!("User selected item: {}", impls[index]),
+        None => println!("User did not select anything"),
+    }
+
+    Python::with_gil(|py| {
+        let builtins = PyModule::import(py, "builtins")?;
+        let total: i32 = builtins
+            .getattr("sum")?
+            .call1((vec![1, 2, 3],),)?
+            .extract()?;
+
+        assert_eq!(total, 6);
+    });
 
     Ok(())
 }

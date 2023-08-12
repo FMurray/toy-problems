@@ -1,5 +1,6 @@
 from quick_find import QuickFind
 from quick_union import QuickUnion
+from toy_problems import QuickUnion as QuickUnionRS
 
 def client(*args):
     alg = args[0]
@@ -7,6 +8,8 @@ def client(*args):
         impl = QuickFind(10)
     elif alg == "QuickUnion":
         impl = QuickUnion(10)
+    elif alg == "QuickUnionRS":
+        impl = QuickUnionRS(10)
     impl.union(4, 3)
     impl.union(3, 8)
     impl.union(6, 5)
@@ -21,3 +24,7 @@ def client(*args):
     print(impl.connected(0, 7))
     print(impl.connected(1, 0))
     print(impl.connected(6, 7))
+
+if __name__ == "__main__":
+    import sys
+    client(*sys.argv[1:])
