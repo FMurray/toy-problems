@@ -74,15 +74,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         None => println!("User did not select anything"),
     }
 
-    Python::with_gil(|py| {
-        let builtins = PyModule::import(py, "builtins")?;
-        let total: i32 = builtins
-            .getattr("sum")?
-            .call1((vec![1, 2, 3],),)?
-            .extract()?;
+    // Python::with_gil(|py| {
+    //     let builtins = PyModule::import(py, "builtins")?;
+    //     let total: i32 = builtins
+    //         .getattr("sum")?
+    //         .call1((vec![1, 2, 3],),)?
+    //         .extract()?;
 
-        assert_eq!(total, 6);
-    });
+    //     assert_eq!(total, 6);
+    // });
 
     Ok(())
 }
