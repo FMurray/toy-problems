@@ -1,0 +1,29 @@
+[[problems]]
+name = "stack"
+path = "collections/stack.rs"
+language = "rust"
+mode = "test"
+
+[[problems]]
+name = "merge_sort"
+path = "divide_and_conquer/merge_sort.rs"
+language = "rust"
+mode = "test"
+
+[[problems]]
+name = "count_inversions"
+path = "divide_and_conquer/count_inversions.rs"
+language = "rust"
+mode = "test"
+
+[[problems]]
+name = "closest_pair"
+path = "divide_and_conquer/closest_pair.rs"
+language = "rust"
+mode = "compile"
+
+[[problems]]
+name = "quick_sort"
+path = "divide_and_conquer/quick_sort.rs"
+language = "rust"
+mode = "compile"
