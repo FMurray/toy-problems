@@ -27,3 +27,9 @@ name = "quick_sort"
 path = "divide_and_conquer/quick_sort.rs"
 language = "rust"
 mode = "compile"
+
+[[problems]]
+name= "Python test"
+path = "problems/test.py"
+language = "python"
+mode = "python"

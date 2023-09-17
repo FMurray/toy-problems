@@ -1,8 +1,8 @@
 use serde::Deserialize;
-use std::path::PathBuf;
-use std::process::{self, Command};
 use std::fmt;
 use std::fs::remove_file;
+use std::path::PathBuf;
+use std::process::{self, Command};
 
 const LANGUAGES: &[&str] = &["rust", "python"];
 const RUSTC_COLOR_ARGS: &[&str] = &["--color", "always"];
@@ -28,8 +28,9 @@ pub enum Language {
 #[derive(Deserialize, Copy, Clone, Debug)]
 #[serde(rename_all = "lowercase")]
 pub enum Mode {
-    Compile, 
+    Compile,
     Test,
+    Python,
 }
 
 #[derive(Deserialize)]
@@ -56,7 +57,7 @@ pub struct CompiledProblem<'a> {
     _handle: FileHandle,
 }
 
-impl<'a>CompiledProblem<'a> {
+impl<'a> CompiledProblem<'a> {
     pub fn run(&self) -> Result<ProblemOutput, ProblemOutput> {
         self.problem.run()
     }
@@ -83,28 +84,23 @@ fn clean() {
 
 impl Problem {
     pub fn compile(&self) -> Result<CompiledProblem, ProblemOutput> {
-
         let cmd = match self.mode {
-            Mode::Compile => {
-                match self.language {
-                    Language::Rust => Command::new("rustc")
-                        .args(&[self.path.to_str().unwrap(), "-o", &temp_file()])
-                        .args(RUSTC_COLOR_ARGS)
-                        .args(RUSTC_EDITION_ARGS)
-                        .output(), 
-                    Language::Python => Command::new("python")
-                        .args(&[self.path.to_str().unwrap(), "-o", &temp_file()])
-                }
-
-
-
+            Mode::Compile => match self.language {
+                Language::Rust => Command::new("rustc")
+                    .args(&[self.path.to_str().unwrap(), "-o", &temp_file()])
+                    .args(RUSTC_COLOR_ARGS)
+                    .args(RUSTC_EDITION_ARGS)
+                    .output(),
+                Language::Python => Command::new("python")
+                    .args(&[self.path.to_str().unwrap()])
+                    .output(),
             },
             Mode::Test => Command::new("rustc")
                 .args(&["--test", self.path.to_str().unwrap(), "-o", &temp_file()])
                 .args(RUSTC_COLOR_ARGS)
                 .args(RUSTC_EDITION_ARGS)
                 .output(),
-            // Language::Python => Ok(())
+            Mode::Python => Command::new("echo").output(),
         }
         .expect("Failed to run 'compile' command");
 
@@ -117,9 +113,13 @@ impl Problem {
             clean();
             Err(ProblemOutput {
                 stdout: String::from_utf8_lossy(&cmd.stdout).to_string(),
-                stderr: String::from_utf8_lossy(&cmd.stderr).to_string()
+                stderr: String::from_utf8_lossy(&cmd.stderr).to_string(),
             })
         }
+    }
+
+    pub fn get_path(&self) -> &PathBuf {
+        &self.path
     }
 
     pub fn run(&self) -> Result<ProblemOutput, ProblemOutput> {
