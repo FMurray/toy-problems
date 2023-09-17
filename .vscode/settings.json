@@ -1,5 +1,10 @@
 {
     "rust-analyzer.linkedProjects": [
-        "./Cargo.toml"
-    ]
+        "./Cargo.toml",
+        "./divide_and_conquer/quick_sort/Cargo.toml",
+        "./divide_and_conquer/randomized_select/Cargo.toml",
+        "./divide_and_conquer/randomized_select/Cargo.toml",
+        "./divide_and_conquer/randomized_select/Cargo.toml"
+    ],
+    "rust-analyzer.showUnlinkedFileNotification": false
 }

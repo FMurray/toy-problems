@@ -1,3 +1,6 @@
-/target
+target/
 /venv
 *.pyc
+
+# Rust
+.fingerprint/
