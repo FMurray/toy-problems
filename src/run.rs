@@ -1,7 +1,7 @@
 use crate::problems::{CompiledProblem, Mode, Problem};
 use indicatif::ProgressBar;
-use pyo3::prelude::*;
-use pyo3::types::PyTuple;
+// use pyo3::prelude::*;
+// use pyo3::types::PyTuple;
 use std::time::Duration;
 enum RunMode {
     Interactive,
@@ -12,7 +12,8 @@ pub fn run(problem: &Problem, verbose: bool) -> Result<(), ()> {
     match problem.mode {
         Mode::Compile => compile_and_run(problem)?,
         Mode::Test => test(problem, verbose)?,
-        Mode::Python => run_python(problem)?,
+        // Mode::Python => run_python(problem)?,
+        _ => todo!(),
     }
     Ok(())
 }
@@ -102,22 +103,22 @@ fn compile<'a, 'b>(
     }
 }
 
-fn run_python(problem: &Problem) -> Result<(), ()> {
-    pyo3::prepare_freethreaded_python();
+// fn run_python(problem: &Problem) -> Result<(), ()> {
+//     pyo3::prepare_freethreaded_python();
 
-    let string = std::fs::read_to_string(&problem.get_path().as_path()).unwrap();
-    print!("{}", string);
-    let from_py: Result<(), PyErr> = Python::with_gil(|py| {
-        let fun: Py<PyAny> = PyModule::from_code(py, &string, "", "")?.into();
+//     let string = std::fs::read_to_string(&problem.get_path().as_path()).unwrap();
+//     print!("{}", string);
+//     let from_py: Result<(), PyErr> = Python::with_gil(|py| {
+//         let fun: Py<PyAny> = PyModule::from_code(py, &string, "", "")?.into();
 
-        fun.call0(py);
-        Ok(())
-    });
-    match from_py {
-        Ok(_) => Ok(()),
-        Err(e) => {
-            println!("Python error: {}", e);
-            Err(())
-        }
-    }
-}
+//         fun.call0(py);
+//         Ok(())
+//     });
+//     match from_py {
+//         Ok(_) => Ok(()),
+//         Err(e) => {
+//             println!("Python error: {}", e);
+//             Err(())
+//         }
+//     }
+// }

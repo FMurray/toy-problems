@@ -33,3 +33,9 @@ name= "Python test"
 path = "problems/test.py"
 language = "python"
 mode = "python"
+
+[[problems]]
+name = "heap"
+path = "heaps/heap.rs"
+language = "rust"
+mode = "test"
