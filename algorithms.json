@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Floyd's Cycle Finding Algorithm",
+    "dataStructures": ["linked list"]
+  },
+  {
+    "name": "merge sort",
+    "dataStructures": ["array"],
+    "categories": ["divide and conquer", "sorting"]
+  },
+  {
+    "name": "quick sort",
+    "dataStructures": ["array"],
+    "categories": ["divide and conquer", "sorting"]
+  }
+]

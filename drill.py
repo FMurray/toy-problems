@@ -5,7 +5,7 @@ import requests
 
 
 @click.command()
-def hello():
+def drill():
     """While the program is running, give prompt user to gues the question type"""
     con = duckdb.connect("questions.db")
     lc_questions = con.sql("SELECT * FROM leetcode").df()
@@ -19,8 +19,6 @@ def hello():
         q_info = get_q_info(q["titleSlug"])
         md = html_to_markdown(q_info.get("data").get("question").get("content"))
         click.echo(md)
-        # click.echo(q_info.get_question_body())
-        # answers = q[].split(",")
         alg_answer = q["algorithm"]
         ds_answer = q["data_structures"]
         while alg_answer:
@@ -39,11 +37,6 @@ def hello():
                 ds_answer = None
             else:
                 click.echo("Incorrect")
-
-    #     print(value)
-    # click.echo("Question: " + q[1])
-    # value = click.prompt("Please enter a valid integer", type=int)
-    # print(dir(click.prompt))
 
 
 def get_types_from_distinct_vals(dvals):
@@ -110,4 +103,4 @@ def html_to_markdown(html_content):
 
 
 if __name__ == "__main__":
-    hello()
+    drill()

@@ -4,3 +4,8 @@ target/
 
 # Rust
 .fingerprint/
+
+# duckdb
+*.wal
+
+.env
