@@ -1,19 +1,18 @@
-
 from cement import App, TestApp, init_defaults
 from cement.core.exc import CaughtSignal
 from .core.exc import ToyProblemsError
 from .controllers.base import Base
 
 # configuration defaults
-CONFIG = init_defaults('toy-problems')
-CONFIG['toy-problems']['foo'] = 'bar'
+CONFIG = init_defaults("toy_problems")
+CONFIG["toy_problems"]["foo"] = "bar"
 
 
 class ToyProblems(App):
     """Toy Problems primary application."""
 
     class Meta:
-        label = 'toy-problems'
+        label = "toy_problems"
 
         # configuration defaults
         config_defaults = CONFIG
@@ -23,34 +22,32 @@ class ToyProblems(App):
 
         # load additional framework extensions
         extensions = [
-            'yaml',
-            'colorlog',
-            'jinja2',
+            "yaml",
+            "colorlog",
+            "jinja2",
         ]
 
         # configuration handler
-        config_handler = 'yaml'
+        config_handler = "yaml"
 
         # configuration file suffix
-        config_file_suffix = '.yml'
+        config_file_suffix = ".yml"
 
         # set the log handler
-        log_handler = 'colorlog'
+        log_handler = "colorlog"
 
         # set the output handler
-        output_handler = 'jinja2'
+        output_handler = "jinja2"
 
         # register handlers
-        handlers = [
-            Base
-        ]
+        handlers = [Base]
 
 
-class ToyProblemsTest(TestApp,ToyProblems):
+class ToyProblemsTest(TestApp, ToyProblems):
     """A sub-class of ToyProblems that is better suited for testing."""
 
     class Meta:
-        label = 'toy-problems'
+        label = "toy_problems"
 
 
 def main():
@@ -59,26 +56,28 @@ def main():
             app.run()
 
         except AssertionError as e:
-            print('AssertionError > %s' % e.args[0])
+            print("AssertionError > %s" % e.args[0])
             app.exit_code = 1
 
             if app.debug is True:
                 import traceback
+
                 traceback.print_exc()
 
         except ToyProblemsError as e:
-            print('ToyProblemsError > %s' % e.args[0])
+            print("ToyProblemsError > %s" % e.args[0])
             app.exit_code = 1
 
             if app.debug is True:
                 import traceback
+
                 traceback.print_exc()
 
         except CaughtSignal as e:
             # Default Cement signals are SIGINT and SIGTERM, exit 0 (non-error)
-            print('\n%s' % e)
+            print("\n%s" % e)
             app.exit_code = 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
