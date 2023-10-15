@@ -3,7 +3,7 @@ import openai
 import os
 import dotenv
 
-from questions import get_algorithms
+from cli.questions import get_algorithms
 
 dotenv.load_dotenv()
 

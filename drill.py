@@ -93,14 +93,5 @@ def get_q_info(titleSlug):
     return req.json()
 
 
-import html2text
-
-
-def html_to_markdown(html_content):
-    converter = html2text.HTML2Text()
-    converter.ignore_links = True
-    return converter.handle(html_content)
-
-
 if __name__ == "__main__":
     drill()

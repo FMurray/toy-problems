@@ -2,3 +2,10 @@ cement==3.0.8
 cement[jinja2]
 cement[yaml]
 cement[colorlog]
+duckdb
+langchain
+langchain[llms]
+python-dotenv
+halo
+rich
+textual

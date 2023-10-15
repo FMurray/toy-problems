@@ -1,11 +1,31 @@
 from cement import App, TestApp, init_defaults
+from cement.utils import fs
 from cement.core.exc import CaughtSignal
 from .core.exc import ToyProblemsError
 from .controllers.base import Base
+import duckdb
+import os
 
 # configuration defaults
 CONFIG = init_defaults("toy_problems")
 CONFIG["toy_problems"]["foo"] = "bar"
+CONFIG["toy_problems"]["db_file"] = "../questions.db"
+
+
+def extend_duckdb(app):
+    app.log.info("extending todo application with duckdb")
+    db_file = app.config.get("toy_problems", "db_file")
+
+    # ensure that we expand the full path
+    db_file = fs.abspath(db_file)
+    app.log.info("duckdb database file is: %s" % db_file)
+
+    # ensure our parent directory exists
+    db_dir = os.path.dirname(db_file)
+    if not os.path.exists(db_dir):
+        os.makedirs(db_dir)
+
+    app.extend("db", duckdb.connect(db_file))
 
 
 class ToyProblems(App):
@@ -41,6 +61,10 @@ class ToyProblems(App):
 
         # register handlers
         handlers = [Base]
+
+        hooks = [
+            ("post_setup", extend_duckdb),
+        ]
 
 
 class ToyProblemsTest(TestApp, ToyProblems):
