@@ -1,120 +1,13 @@
 import duckdb
 
-from langchain.chains import LLMChain
-from langchain.memory import ConversationBufferMemory
-from langchain.globals import set_llm_cache
-from langchain.cache import InMemoryCache
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import SystemMessage
-from langchain.prompts import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    MessagesPlaceholder,
-)
+from questions import QuestionList, Question, Step
 
-import dotenv
-import os
-from dataclasses import dataclass
-
-from questions import QuestionList
-
-
-@dataclass
-class Step:
-    instructions: str
-    human_input: str
-    tutor_response: str
-
-
-class ProblemSolvingTutor:
-    step_instructions = [
-        """
-        Step 1. Listen to the problem. Are there any hints in the problem statement?
-        """,
-        """
-        Step 2. Make an example that's large and generic. 
-        """,
-        """
-        Step 3. State the brute force solution.
-        """,
-        """
-        Step 4. Optimize
-        """,
-        """
-        Step 5. Walk through algorithm
-        """,
-        """
-        Step 6. Translate the algorithm into code.
-        """,
-        """
-        Step 7. Verify the correctness of the code.
-        """,
-    ]
-
-    def __init__(self) -> None:
-        con = duckdb.connect("../questions.db")
-        self.question_list = QuestionList(con)
-        self.question = next(self.question_list)
-        self.step = self.get_next_step()
-
-    def get_next_step(self):
-        return Step(
-            instructions=self.step_instructions.pop(0),
-            human_input="",
-            tutor_response="",
-        )
-
-
-def problem_solving_chain(question):
-    """Chain for practicing solving leetcode problems"""
-
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            SystemMessage(
-                content=f"""
-                You are a data structures and algorithms tutor.
-                I want to practice solving leetcode problems by using a 7 step process. 
-                The 7 steps are:
-                1. Listen to the problem (try to find hints in the problem statement)
-                2. Make an example that's large and generic. 
-                3. State the brute force solution.
-                4. Optimize
-                5. Walk through algorithm
-                6. Translate the algorithm into code.
-                7. Verify the correctness of the code.
-
-                Let's take this one step at a time. We will start with step 1. 
-                At the end you can give me an evalation based on how well I did on each step.
-
-                The question is: 
-                {question.md}
-
-                Here are some hints: 
-                {question.hints}
-
-                """,
-            ),  # The persistent system prompt
-            MessagesPlaceholder(
-                variable_name="chat_history"
-            ),  # Where the memory will be stored.
-            HumanMessagePromptTemplate.from_template(
-                "{human_input}"
-            ),  # Where the human input will injected
-        ]
-    )
-
-    memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-    llm_chain = LLMChain(
-        llm=llm,
-        prompt=prompt,
-        memory=memory,
-    )
-    return llm_chain
-
+import asyncio
 
 from textual import events
 from textual.app import App, ComposeResult
-from textual.containers import ScrollableContainer
+from textual.reactive import reactive
+from textual.containers import ScrollableContainer, Container
 from textual.widgets import (
     Button,
     Footer,
@@ -122,49 +15,64 @@ from textual.widgets import (
     Static,
     MarkdownViewer,
     TextArea,
-    RichLog,
+    LoadingIndicator,
 )
 
 
 class ProblemSolver(App):
     """Practice solving toy problems."""
 
-    question_list: QuestionList
+    def __init__(self, QuestionList, Question):
+        self.question_list = QuestionList
+        self.question = self.question_list.question
+        self.question.callback_handler = self.text_handler
+        super().__init__()
 
     BINDINGS = [
         ("d", "toggle_dark", "Toggle dark mode"),
+        ("s", "submit_step", "Submit the current step")
         # ("shift+enter", "answer_submit", "Submit your answer"),
     ]
+
+    CSS_PATH = "problem_solving.tcss"
 
     def compose(self) -> ComposeResult:
         """Create child widgets for the app."""
 
         yield Header()
         yield Footer()
-        yield MarkdownViewer(self.question_list.current.md, show_table_of_contents=True)
+        yield MarkdownViewer(self.question.md, show_table_of_contents=True, id="md")
         yield TextArea(
-            """# Start solving the problem -> """,
+            self.question.step.display_text,
             language="python",
+            id="code-editor",
         )
+
+    def text_handler(self, text: str) -> None:
+        text_area = self.query_one("#code-editor")
+        text_area.insert(text)
 
     def action_toggle_dark(self) -> None:
         """An action to toggle dark mode."""
         self.dark = not self.dark
 
-    def action_answer_submit(self) -> None:
+    async def action_submit_step(self) -> None:
         """An action to submit an answer."""
-        self.submit_answer()
+        text_area = self.query_one("#code-editor")
+        task = asyncio.create_task(
+            self.question.chain.apredict(human_input=text_area.text)
+        )
 
-    def submit_answer(self):
-        print("submitting answer")
+        async for i in self.question.token_callback.aiter():
+            display_text = self.question.update_response(i)
+            text_area.insert(display_text)
+
+        await task
 
 
 if __name__ == "__main__":
-    dotenv.load_dotenv()
-    set_llm_cache(InMemoryCache())
-    llm = ChatOpenAI(model_name="gpt-4", openai_api_key=os.getenv("OPENAI_API_KEY"))
     con = duckdb.connect("../questions.db")
     question_list = QuestionList(con)
-    app = ProblemSolver()
-    app.question_list = question_list
+    question = question_list.question
+    app = ProblemSolver(question_list, question)
     app.run()

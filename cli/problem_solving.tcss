@@ -1,0 +1,4 @@
+LoadingIndicator.remove {
+  display: none;
+  height: 10;
+}
